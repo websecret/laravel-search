@@ -41,7 +41,7 @@ class Article extends Model implements SearchableInterface
 	use SearchableTrait;
 
 	protected $searchable = [
-        //'index' => 'allcity',
+        //'index' => 'domain_name',
         //'type' => 'articles',
         'fields' => [
             'title' => [
