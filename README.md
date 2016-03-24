@@ -18,7 +18,7 @@ Then, update `config/app.php` by adding an entry for the service provider.
 ```php
 'providers' => [
 	// ...
-	'Websecret\LaravelSearchable\SearchableServiceProvider',
+	Websecret\LaravelSearchable\SearchableServiceProvider::class,
 ];
 ```
 
@@ -64,7 +64,7 @@ class Article extends Model implements SearchableInterface
 Use `search` scope to find models. Result collection will be sorted by score. 
 
 ```
-    $articles = Article::search('apple')->get();
+    $articles = Article::where('is_active', 1)->search('apple')->get();
 ```
 
 
