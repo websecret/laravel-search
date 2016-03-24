@@ -1,0 +1,29 @@
+{
+  "name": "websecret/laravel-search",
+  "description": "Laravel Eloquent models with Elasticsearch 2",
+  "keywords": [
+    "laravel",
+    "eloquent",
+    "elasticsearch",
+    "search"
+  ],
+  "homepage": "https://github.com/websecret/laravel-search",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Websecret"
+    }
+  ],
+  "require": {
+    "php": ">=5.5",
+    "illuminate/config": "^5.0",
+    "illuminate/database": "^5.0",
+    "illuminate/support": "^5.0",
+    "elasticsearch/elasticsearch": "2.*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Websecret\\LaravelSearchable\\": "src/"
+    }
+  }
+}
