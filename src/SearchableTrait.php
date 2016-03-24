@@ -9,6 +9,8 @@ trait SearchableTrait
     private static $config;
     private static $searchedItems = [];
 
+    private $_score = null;
+
     public function __construct()
     {
         self::$elasticsearch = ClientBuilder::create()->build();
