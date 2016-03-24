@@ -41,6 +41,8 @@ class Article extends Model implements SearchableInterface
 	use SearchableTrait;
 
 	protected $searchable = [
+        //'index' => 'allcity',
+        //'type' => 'articles',
         'fields' => [
             'title' => [
                 'weight' => 3,
@@ -51,8 +53,8 @@ class Article extends Model implements SearchableInterface
                 'weight' => 1,
             ],
         ],
-        "fuzziness" => "AUTO",
-        "prefix_length"=> 2,
+        //"fuzziness" => "AUTO",
+        //"prefix_length"=> 2,
     ];
 
 }
