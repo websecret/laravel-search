@@ -45,7 +45,7 @@ class Article extends Model implements SearchableInterface
             'title' => [
                 'weight' => 3,
             ],
-            'content'
+            'content',
             'category.title' => [
                 'title' => 'category',
                 'weight' => 1,
