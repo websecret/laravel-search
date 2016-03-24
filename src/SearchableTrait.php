@@ -41,6 +41,7 @@ trait SearchableTrait
                 'fields' => $matchFields,
                 "fuzziness" => array_get(static::$config, 'fuzziness'),
                 "prefix_length"=> array_get(static::$config, 'prefix_length'),
+                "max_expansions"=> array_get(static::$config, 'max_expansions'),
             ];
             foreach ($fields as $fieldName => $fieldArray) {
                 if(is_array($fieldArray)) {

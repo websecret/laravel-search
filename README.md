@@ -55,6 +55,7 @@ class Article extends Model implements SearchableInterface
         ],
         //"fuzziness" => "AUTO",
         //"prefix_length"=> 2,
+        //"max_expansions"=> 100,
     ];
 
 }
@@ -74,3 +75,26 @@ Use `search` scope to find models. Result collection will be sorted by score.
 
 Models auto indexing on `updated`, `created` and `deleted` events.
 You can use `$article->searchIndex();` and `$article->searchDelete();` to manually index or delete from index. Use `Article::searchDeleteAll()` to clear all index by specified model.
+
+
+## Config
+
+### fuzziness
+
+Fuzzy matching treats two words that are “fuzzily” similar as if they were the same word.
+
+Of course, the impact that a single edit has on a string depends on the length of the string. Two edits to the word hat can produce mad, so allowing two edits on a string of length 3 is overkill. The fuzziness parameter can be set to AUTO, which results in the following maximum edit distances:
+
+* `0` for strings of one or two characters
+* `1` for strings of three, four, or five characters
+* `2` for strings of more than five characters
+
+Of course, you may find that an edit distance of 2 is still overkill, and returns results that don’t appear to be related. You may get better results, and better performance, with a maximum fuzziness of 1.
+
+### prefix_length
+
+The number of initial characters which will not be “fuzzified”. This helps to reduce the number of terms which must be examined.
+ 
+### max_expansions
+
+The maximum number of terms that the fuzzy query will expand to.
