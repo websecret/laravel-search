@@ -57,3 +57,18 @@ class Article extends Model implements SearchableInterface
 
 }
 ```
+
+
+## Searching
+
+Use `search` scope to find models. Result collection will be sorted by score. 
+
+```
+    $articles = Article::search('apple')->get();
+```
+
+
+## Indexing
+
+Models auto indexing on `updated`, `created` and `deleted` events.
+You can use `$article->searchIndex();` and `$article->searchDelete();` to manually index or delete from index. Use `Article::searchDeleteAll()` to clear all index by specified model.
