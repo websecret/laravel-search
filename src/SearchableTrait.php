@@ -15,6 +15,7 @@ trait SearchableTrait
     {
         self::$elasticsearch = ClientBuilder::create()->build();
         self::$config = $this->getSearchableConfig();
+        parent::__construct();
     }
 
     public function scopeSearch($query, $search = "")
