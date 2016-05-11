@@ -11,11 +11,11 @@ trait SearchableTrait
 
     private $_score = null;
 
-    public function __construct()
+    public function __construct(array $attributes = [])
     {
         self::$elasticsearch = ClientBuilder::create()->build();
         self::$config = $this->getSearchableConfig();
-        parent::__construct();
+        parent::__construct($attributes);
     }
 
     public function scopeSearch($query, $search = "")
