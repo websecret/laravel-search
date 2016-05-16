@@ -27,12 +27,16 @@ trait SearchableTrait
 
     public static function hydrate(array $items, $connection = null)
     {
-        return parent::hydrate($items, $connection)->each(function($item) {
-            $hitItem = array_first(array_get(static::$searchedItems, 'hits.hits', []), function($i, $hitItem) use($item) {
-                return $hitItem['_id'] == $item->id;
-            });
-            $item->_score = array_get($hitItem, '_score', 0);
-        })->sortByDesc('_score');
+        $items = parent::hydrate($items, $connection);
+        if(count(static::$searchedItems)) {
+            $items = $items->each(function($item) {
+                $hitItem = array_first(array_get(static::$searchedItems, 'hits.hits', []), function($i, $hitItem) use($item) {
+                    return $hitItem['_id'] == $item->id;
+                });
+                $item->_score = array_get($hitItem, '_score', 0);
+            })->sortByDesc('_score');
+        }
+        return $items;
     }
 
     protected function getItems($search)
