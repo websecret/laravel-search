@@ -77,6 +77,7 @@ trait SearchableTrait
         $items = self::$elasticsearch->search([
             'index' => array_get(self::$config, 'index'),
             'type' => array_get(self::$config, 'type'),
+            'size' => array_get(self::$config, 'size'),
             'body' => [
                 'query' => $query,
             ]
