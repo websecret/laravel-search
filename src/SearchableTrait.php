@@ -18,9 +18,9 @@ trait SearchableTrait
         parent::__construct($attributes);
     }
 
-    public function scopeSearch($query, $search = "")
+    public function scopeSearch($query, $search = "", $options = [])
     {
-        $items = $this->getItems($search);
+        $items = $this->getItems($search, $options);
         self::$searchedItems = $items;
         return $query->whereIn('id', array_pluck(array_get($items, 'hits.hits', []), '_id'));
     }
@@ -39,8 +39,18 @@ trait SearchableTrait
         return $items;
     }
 
-    protected function getItems($search)
+    protected function getItems($search, $options = [])
     {
+        if (array_get($options, 'wildcard', false)) {
+            return self::$elasticsearch->search([
+                'index' => array_get(self::$config, 'index'),
+                'type' => array_get(self::$config, 'type'),
+                'size' => array_get(self::$config, 'size'),
+                'body' => [
+                    'query' => ['wildcard' => $search],
+                ]
+            ]);
+        }
         if ($fields = array_get(static::$config, 'fields')) {
             $matchFields = [];
             $match = [
