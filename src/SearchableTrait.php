@@ -47,7 +47,12 @@ trait SearchableTrait
                 'type' => array_get(self::$config, 'type'),
                 'size' => array_get(self::$config, 'size'),
                 'body' => [
-                    'query' => ['wildcard' => $search],
+                    'query' => [
+                        'query_string' => [
+                            'query' => $search,
+                            'fields' => array_get(static::$config, 'fields'),
+                        ],
+                    ],
                 ]
             ]);
         }
