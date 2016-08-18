@@ -41,7 +41,6 @@ trait SearchableTrait
 
     protected function getItems($search, $options = [])
     {
-        $search = addcslashes($search, '.?*|{}[]()"\\');
         if (array_get($options, 'wildcard', false)) {
             return self::$elasticsearch->search([
                 'index' => array_get(self::$config, 'index'),
@@ -57,6 +56,7 @@ trait SearchableTrait
                 ]
             ]);
         }
+        $search = addcslashes($search, '.?*|{}[]()"\\');
         if ($fields = array_get(static::$config, 'fields')) {
             $matchFields = [];
             $match = [
