@@ -18,11 +18,16 @@ trait SearchableTrait
         parent::__construct($attributes);
     }
 
-    public function scopeSearch($query, $search = "", $options = [])
+    public function scopeSearch($query, $search = "", $options = [], $useTableInQuery = false)
     {
         $items = $this->getItems($search, $options);
         self::$searchedItems = $items;
-        return $query->whereIn('id', array_pluck(array_get($items, 'hits.hits', []), '_id'));
+        $primaryKey = $this->primaryKey;
+        $column = $primaryKey;
+        if($useTableInQuery) {
+            $column = $this->getTable() . '.' . $column;
+        }
+        return $query->whereIn($column, array_pluck(array_get($items, 'hits.hits', []), '_' . $primaryKey));
     }
 
     public static function hydrate(array $items, $connection = null)
