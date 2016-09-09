@@ -13,8 +13,13 @@ trait SearchableTrait
 
     public function __construct(array $attributes = [])
     {
-        self::$elasticsearch = ClientBuilder::create()->build();
         self::$config = $this->getSearchableConfig();
+        $hosts = array_get(self::$config, 'hosts', []);
+        if(!is_array($hosts) || empty($hosts)) {
+            self::$elasticsearch = ClientBuilder::create()->build();
+        } else {
+            self::$elasticsearch = ClientBuilder::create()->setHosts($hosts)->build();
+        }
         parent::__construct($attributes);
     }
 
