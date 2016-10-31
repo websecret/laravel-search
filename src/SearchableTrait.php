@@ -54,38 +54,54 @@ trait SearchableTrait
         $search = addcslashes($search, '.?|{}[]()"\\/');
         $variants = $this->getSearchVariants($search);
         if (array_get($options, 'wildcard', false)) {
+            $matches = [];
+            foreach ($variants as $variant) {
+                $matches[] = [
+                    'multi_match' => [
+                        'query' => $variant,
+                        'fields' => array_get(static::$config, 'fields'),
+                    ],
+                ];
+            }
             $query = [
-                'multi_match' => [
-                    'query' => $variants,
-                    'fields' => array_get(static::$config, 'fields'),
+                'bool' => [
+                    'should' => $matches,
                 ],
             ];
         } else {
             if ($fields = array_get(static::$config, 'fields')) {
-                $matchFields = [];
-                $match = [
-                    'query' => $variants,
-                    'fields' => $matchFields,
-                    "fuzziness" => array_get(static::$config, 'fuzziness'),
-                    "prefix_length" => array_get(static::$config, 'prefix_length'),
-                    "max_expansions" => array_get(static::$config, 'max_expansions'),
-                ];
-                foreach ($fields as $fieldName => $fieldArray) {
-                    if (is_array($fieldArray)) {
-                        $fieldTitle = array_get($fieldArray, 'title', $fieldName);
-                    } else {
-                        $fieldName = $fieldArray;
-                        $fieldArray = [];
-                        $fieldTitle = $fieldName;
+                $matches = [];
+                foreach ($variants as $variant) {
+                    $matchFields = [];
+                    $match = [
+                        'query' => $variant,
+                        'fields' => $matchFields,
+                        "fuzziness" => array_get(static::$config, 'fuzziness'),
+                        "prefix_length" => array_get(static::$config, 'prefix_length'),
+                        "max_expansions" => array_get(static::$config, 'max_expansions'),
+                    ];
+                    foreach ($fields as $fieldName => $fieldArray) {
+                        if (is_array($fieldArray)) {
+                            $fieldTitle = array_get($fieldArray, 'title', $fieldName);
+                        } else {
+                            $fieldName = $fieldArray;
+                            $fieldArray = [];
+                            $fieldTitle = $fieldName;
+                        }
+                        $fieldTitle = str_replace('.', '_', $fieldTitle);
+                        if (($weight = array_get($fieldArray, 'weight')) !== null) {
+                            $fieldTitle = $fieldTitle . '^' . $weight;
+                        }
+                        $match['fields'][] = $fieldTitle;
                     }
-                    $fieldTitle = str_replace('.', '_', $fieldTitle);
-                    if (($weight = array_get($fieldArray, 'weight')) !== null) {
-                        $fieldTitle = $fieldTitle . '^' . $weight;
-                    }
-                    $match['fields'][] = $fieldTitle;
+                    $matches[] = [
+                        'multi_match' => $match,
+                    ];
                 }
                 $query = [
-                    'multi_match' => $match,
+                    'bool' => [
+                        'should' => $matches,
+                    ],
                 ];
             } else {
                 $query = [
