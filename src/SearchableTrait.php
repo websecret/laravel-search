@@ -52,15 +52,44 @@ trait SearchableTrait
     protected function getItems($search, $options = [])
     {
         $search = addcslashes($search, '.?|{}[]()"\\/');
+        if (array_get($options, 'wildcard', true)) {
+            if(!ends_with($search, '*')) {
+                $search = $search . '*';
+            }
+        }
         $variants = $this->getSearchVariants($search);
-        if (array_get($options, 'wildcard', false)) {
+        if ($fields = array_get(static::$config, 'fields')) {
             $matches = [];
             foreach ($variants as $variant) {
+                $matchFields = [];
+                $match = [
+                    'query' => $variant,
+                    'fields' => $matchFields,
+                    "fuzziness" => array_get(static::$config, 'fuzziness'),
+                    "prefix_length" => array_get(static::$config, 'prefix_length'),
+                    "max_expansions" => array_get(static::$config, 'max_expansions'),
+                ];
+                foreach ($fields as $fieldName => $fieldArray) {
+                    if (is_array($fieldArray)) {
+                        $fieldTitle = array_get($fieldArray, 'title', $fieldName);
+                    } else {
+                        $fieldName = $fieldArray;
+                        $fieldArray = [];
+                        $fieldTitle = $fieldName;
+                    }
+                    $fieldTitle = str_replace('.', '_', $fieldTitle);
+                    if (($weight = array_get($fieldArray, 'weight')) !== null) {
+                        $fieldTitle = $fieldTitle . '^' . $weight;
+                    }
+                    $match['fields'][] = $fieldTitle;
+                }
+                if(mb_strlen($variant) > 5) {
+                    $matches[] = [
+                        'multi_match' => $match,
+                    ];
+                }
                 $matches[] = [
-                    'multi_match' => [
-                        'query' => $variant,
-                        'fields' => array_get(static::$config, 'fields'),
-                    ],
+                    'query_string' => array_except($match, ['prefix_length', 'max_expansions']),
                 ];
             }
             $query = [
@@ -69,47 +98,11 @@ trait SearchableTrait
                 ],
             ];
         } else {
-            if ($fields = array_get(static::$config, 'fields')) {
-                $matches = [];
-                foreach ($variants as $variant) {
-                    $matchFields = [];
-                    $match = [
-                        'query' => $variant,
-                        'fields' => $matchFields,
-                        "fuzziness" => array_get(static::$config, 'fuzziness'),
-                        "prefix_length" => array_get(static::$config, 'prefix_length'),
-                        "max_expansions" => array_get(static::$config, 'max_expansions'),
-                    ];
-                    foreach ($fields as $fieldName => $fieldArray) {
-                        if (is_array($fieldArray)) {
-                            $fieldTitle = array_get($fieldArray, 'title', $fieldName);
-                        } else {
-                            $fieldName = $fieldArray;
-                            $fieldArray = [];
-                            $fieldTitle = $fieldName;
-                        }
-                        $fieldTitle = str_replace('.', '_', $fieldTitle);
-                        if (($weight = array_get($fieldArray, 'weight')) !== null) {
-                            $fieldTitle = $fieldTitle . '^' . $weight;
-                        }
-                        $match['fields'][] = $fieldTitle;
-                    }
-                    $matches[] = [
-                        'multi_match' => $match,
-                    ];
-                }
-                $query = [
-                    'bool' => [
-                        'should' => $matches,
-                    ],
-                ];
-            } else {
-                $query = [
-                    'query_string' => [
-                        'query' => $search,
-                    ],
-                ];
-            }
+            $query = [
+                'query_string' => [
+                    'query' => $search,
+                ],
+            ];
         }
         $body = [
             'query' => $query,
@@ -215,7 +208,7 @@ trait SearchableTrait
             $string = trim($string);
             $variants[] = $string;
         }
-        return $variants;
+        return array_unique($variants);
     }
 
     protected function getSearchableConfig()
