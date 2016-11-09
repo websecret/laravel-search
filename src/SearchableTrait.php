@@ -39,11 +39,11 @@ trait SearchableTrait
     {
         $items = parent::hydrate($items, $connection);
         if (count(static::$searchedItems)) {
-            $items = $items->each(function ($item) {
-                $hitItem = array_first(array_get(static::$searchedItems, 'hits.hits', []), function ($i, $hitItem) use ($item) {
+            $items = $items->each(function (&$item) {
+                $hitItem = array_first(array_get(self::$searchedItems, 'hits.hits', []), function ($i, $hitItem) use ($item) {
                     return $hitItem['_id'] == $item->id;
                 });
-                $item->_score = array_get($hitItem, '_score', 0);
+                $item->setAttribute('_score', array_get($hitItem, '_score', 0));
             })->sortByDesc('_score');
         }
         return $items;
@@ -51,16 +51,20 @@ trait SearchableTrait
 
     protected function getItems($search, $options = [])
     {
+        $search = mb_strtolower($search);
         $search = addcslashes($search, '.?|{}[]()"\\/');
         if (array_get($options, 'wildcard', true)) {
             if(!ends_with($search, '*')) {
                 $search = $search . '*';
             }
+            if(!starts_with($search, '*')) {
+                $search = '*' . $search;
+            }
         }
         $variants = $this->getSearchVariants($search);
         if ($fields = array_get(static::$config, 'fields')) {
             $matches = [];
-            foreach ($variants as $variant) {
+            foreach ($variants as $key => $variant) {
                 $matchFields = [];
                 $match = [
                     'query' => $variant,
@@ -68,6 +72,7 @@ trait SearchableTrait
                     "fuzziness" => array_get(static::$config, 'fuzziness'),
                     "prefix_length" => array_get(static::$config, 'prefix_length'),
                     "max_expansions" => array_get(static::$config, 'max_expansions'),
+                    "boost" => ($key == 0) ? 0.1 : 0,
                 ];
                 foreach ($fields as $fieldName => $fieldArray) {
                     if (is_array($fieldArray)) {
@@ -88,6 +93,7 @@ trait SearchableTrait
                         'multi_match' => $match,
                     ];
                 }
+                $match['boost'] = ($key == 0) ? 5 : 0;
                 $matches[] = [
                     'query_string' => array_except($match, ['prefix_length', 'max_expansions']),
                 ];
