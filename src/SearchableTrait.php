@@ -52,7 +52,6 @@ trait SearchableTrait
     protected function getItems($search, $options = [])
     {
         $search = mb_strtolower($search);
-        $search = addcslashes($search, '.?|{}[]()"\\/');
         if (array_get($options, 'wildcard', true)) {
             if(!ends_with($search, '*')) {
                 $search = $search . '*';
@@ -65,6 +64,7 @@ trait SearchableTrait
         if ($fields = array_get(static::$config, 'fields')) {
             $matches = [];
             foreach ($variants as $key => $variant) {
+                $variant = addcslashes($variant, '.?|{}[]()"\\/');
                 $matchFields = [];
                 $match = [
                     'query' => $variant,
