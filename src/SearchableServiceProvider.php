@@ -28,17 +28,23 @@ class SearchableServiceProvider extends ServiceProvider
     {
         $this->app['events']->listen('eloquent.created*', function ($model) {
             if ($model instanceof SearchableInterface) {
-                $model->searchIndex();
+                if($model::$indexingEnabled && $model::$indexSearchOnCreate) {
+                    $model->searchIndex();
+                }
             }
         });
         $this->app['events']->listen('eloquent.updated*', function ($model) {
             if ($model instanceof SearchableInterface) {
-                $model->searchIndex();
+                if($model::$indexingEnabled && $model::$indexSearchOnUpdate) {
+                    $model->searchIndex();
+                }
             }
         });
         $this->app['events']->listen('eloquent.deleted*', function ($model) {
             if ($model instanceof SearchableInterface) {
-                $model->searchDelete();
+                if($model::$indexingEnabled && $model::$indexSearchOnDelete) {
+                    $model->searchDelete();
+                }
             }
         });
     }

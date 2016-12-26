@@ -9,6 +9,11 @@ trait SearchableTrait
     private static $config;
     private static $searchedItems = [];
 
+    public static $indexingEnabled;
+    public static $indexSearchOnCreate = true;
+    public static $indexSearchOnUpdate = true;
+    public static $indexSearchOnDelete = true;
+
     private $_score = null;
 
     public function __construct(array $attributes = [])
@@ -20,6 +25,7 @@ trait SearchableTrait
         } else {
             self::$elasticsearch = ClientBuilder::create()->setHosts($hosts)->build();
         }
+        self::$indexingEnabled = array_get(static::$config, 'indexing', true);
         parent::__construct($attributes);
     }
 
