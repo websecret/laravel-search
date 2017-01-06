@@ -274,13 +274,13 @@ trait SearchableTrait
         return $object;
     }
 
-    public function searchIndex()
+    public function searchIndex($additional = [])
     {
         static::$elasticsearch->index([
             'index' => array_get(self::$config, 'index'),
             'type' => array_get(self::$config, 'type'),
             'id' => $this->id,
-            'body' => self::getBody($this),
+            'body' => array_merge(self::getBody($this), $additional),
         ]);
     }
 
