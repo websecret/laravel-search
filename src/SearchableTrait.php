@@ -31,14 +31,32 @@ trait SearchableTrait
 
     public function scopeSearch($query, $search = "", $options = [], $useTableInQuery = false)
     {
-        $items = $this->getItems($search, $options);
-        self::$searchedItems = $items;
+        if (!self::$indexingEnabled) {
+            return $query;
+        }
         $primaryKey = $this->primaryKey;
         $column = $primaryKey;
         if ($useTableInQuery) {
             $column = $this->getTable() . '.' . $column;
         }
-        return $query->whereIn($column, array_pluck(array_get($items, 'hits.hits', []), '_' . $primaryKey));
+        if (!is_array($search)) {
+            $search = [$search];
+        }
+        $search = array_filter($search);
+        $ids = [];
+        foreach ($search as $value) {
+            $ids = array_merge($ids, $this->getSearchIds($value, $options));
+        }
+        $ids = array_unique($ids);
+        return $query->whereIn($column, $ids);
+    }
+
+    protected function getSearchIds($search = "", $options = [])
+    {
+        $items = $this->getItems($search, $options);
+        self::$searchedItems = $items;
+        $primaryKey = $this->primaryKey;
+        return array_pluck(array_get($items, 'hits.hits', []), '_' . $primaryKey);
     }
 
     public static function hydrate(array $items, $connection = null)
@@ -59,10 +77,10 @@ trait SearchableTrait
     {
         $search = mb_strtolower($search);
         if (array_get($options, 'wildcard', true)) {
-            if(!ends_with($search, '*')) {
+            if (!ends_with($search, '*')) {
                 $search = $search . '*';
             }
-            if(!starts_with($search, '*')) {
+            if (!starts_with($search, '*')) {
                 $search = '*' . $search;
             }
         }
@@ -94,7 +112,7 @@ trait SearchableTrait
                     }
                     $match['fields'][] = $fieldTitle;
                 }
-                if(mb_strlen($variant) > 5) {
+                if (mb_strlen($variant) > 5) {
                     $matches[] = [
                         'multi_match' => $match,
                     ];
