@@ -96,6 +96,7 @@ trait SearchableTrait
                     "fuzziness" => array_get(static::$config, 'fuzziness'),
                     "prefix_length" => array_get(static::$config, 'prefix_length'),
                     "max_expansions" => array_get(static::$config, 'max_expansions'),
+                    "lenient" => array_get(static::$config, 'lenient', true),
                     "boost" => ($key == 0) ? 0.1 : 0,
                 ];
                 foreach ($fields as $fieldName => $fieldArray) {
