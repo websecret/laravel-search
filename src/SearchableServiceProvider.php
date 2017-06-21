@@ -26,23 +26,16 @@ class SearchableServiceProvider extends ServiceProvider
 
     public function registerEvents()
     {
-        $this->app['events']->listen('eloquent.created*', function ($model) {
-            if ($model instanceof SearchableInterface) {
-                if($model::$indexingEnabled && $model::$indexSearchOnCreate) {
+        $this->app['events']->listen('eloquent.saved*', function ($event, $models) {
+            foreach ($models as $model) {
+                if ($model instanceof SearchableInterface) {
                     $model->searchIndex();
                 }
             }
         });
-        $this->app['events']->listen('eloquent.updated*', function ($model) {
-            if ($model instanceof SearchableInterface) {
-                if($model::$indexingEnabled && $model::$indexSearchOnUpdate) {
-                    $model->searchIndex();
-                }
-            }
-        });
-        $this->app['events']->listen('eloquent.deleted*', function ($model) {
-            if ($model instanceof SearchableInterface) {
-                if($model::$indexingEnabled && $model::$indexSearchOnDelete) {
+        $this->app['events']->listen('eloquent.deleted*', function ($event, $models) {
+            foreach ($models as $model) {
+                if ($model instanceof SearchableInterface) {
                     $model->searchDelete();
                 }
             }

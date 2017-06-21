@@ -59,18 +59,18 @@ trait SearchableTrait
         return array_pluck(array_get($items, 'hits.hits', []), '_' . $primaryKey);
     }
 
-    public static function hydrate(array $items, $connection = null)
+    public function newCollection(array $models = [])
     {
-        $items = parent::hydrate($items, $connection);
-        if (count(static::$searchedItems)) {
-            $items = $items->each(function (&$item) {
-                $hitItem = array_first(array_get(self::$searchedItems, 'hits.hits', []), function ($i, $hitItem) use ($item) {
+        $models = parent::newCollection($models);
+        if(count(static::$searchedItems)) {
+            $models = $models->each(function($item) {
+                $hitItem = array_first(array_get(static::$searchedItems, 'hits.hits', []), function($i, $hitItem) use($item) {
                     return $hitItem['_id'] == $item->id;
                 });
-                $item->setAttribute('_score', array_get($hitItem, '_score', 0));
+                $item->_score = array_get($hitItem, '_score', 0);
             })->sortByDesc('_score');
         }
-        return $items;
+        return $models;
     }
 
     protected function getItems($search, $options = [])
